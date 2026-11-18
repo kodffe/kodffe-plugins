@@ -1,0 +1,42 @@
+{
+  "description": "k-delegate: session context, start and announce delegated tasks, savings line. Silent when the plugin is disabled in .claude/kodffe.json.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/bin/kds.mjs", "_hook", "session-start"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/bin/kds.mjs", "_hook", "post-tool-use"],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/bin/kds.mjs", "_hook", "stop"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

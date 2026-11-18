@@ -6,5 +6,14 @@
   "metadata": {
     "description": "Claude Code plugins by Kodffe Software"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "k-delegate",
+      "source": "./plugins/k-delegate",
+      "description": "Lets Claude Code hand small, well-scoped tasks to a cheaper DeepSeek model in isolated git worktrees, then review the result before it reaches your branch",
+      "version": "0.1.0",
+      "category": "development",
+      "keywords": ["kodffe", "deepseek", "delegate"]
+    }
+  ]
 }

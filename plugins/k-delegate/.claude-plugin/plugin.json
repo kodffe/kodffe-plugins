@@ -1,0 +1,26 @@
+{
+  "name": "k-delegate",
+  "displayName": "DeepSeek Delegate",
+  "version": "0.1.0",
+  "description": "Lets Claude Code hand small, well-scoped tasks to a cheaper DeepSeek model in isolated git worktrees, then review the result before it reaches your branch",
+  "author": { "name": "Kodffe Software", "url": "https://github.com/kodffe" },
+  "homepage": "https://github.com/kodffe/kodffe-plugins/tree/main/plugins/k-delegate",
+  "repository": "https://github.com/kodffe/kodffe-plugins",
+  "license": "MIT",
+  "keywords": ["kodffe", "deepseek", "delegate", "subagent", "worktree", "cost"],
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "1. API key (required)",
+      "description": "Step 1 of 2. Paste your personal DeepSeek API key, issued by Kodffe. Stored in your system's secure credential store, never in the project. Then go down to step 2.",
+      "sensitive": true
+    },
+    "model": {
+      "type": "string",
+      "title": "2. Model (optional)",
+      "description": "Step 2 of 2. Which DeepSeek model runs delegated tasks. deepseek-flash (default): fast and cheapest, right for most tasks. deepseek-v4-pro: stronger, about 4 times the price. Then choose Save.",
+      "options": ["deepseek-flash", "deepseek-v4-pro"],
+      "default": "deepseek-flash"
+    }
+  }
+}

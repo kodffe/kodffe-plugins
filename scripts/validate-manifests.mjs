@@ -1,14 +1,19 @@
 #!/usr/bin/env node
 // Validates every plugin against the Kodffe plugin standards (anatomy, plugin.json,
 // naming) and checks that .claude-plugin/marketplace.json lists each plugin.
+//
+// Naming: the plugin folder is a short kebab-case name with the "k-" prefix (k-delegate),
+// because Claude Code types it before every command (/k-delegate:kds); "displayName"
+// carries the descriptive name. The short id (kds) comes from its single commands/<id>.md.
 
-import { readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listPlugins } from './sync-shared.mjs';
 
 const REPOSITORY = 'https://github.com/kodffe/kodffe-plugins';
-const NAME_PATTERN = /^k[a-z]{1,3}$/;
+const NAME_PATTERN = /^k(?:-[a-z0-9]+)+$/;
+const ID_PATTERN = /^k[a-z]{1,3}$/;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const DATA_SECTION = /^##\s+Data that leaves your machine\s*$/m;
 
@@ -29,22 +34,28 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-async function validatePlugin(root, name, marketplaceEntry) {
+export async function readShortId(root, name) {
+  const dir = join(root, 'plugins', name, 'commands');
+  if (!(await exists(dir))) return null;
+  const commands = (await readdir(dir)).filter((file) => file.endsWith('.md'));
+  return commands.length === 1 ? commands[0].slice(0, -'.md'.length) : null;
+}
+
+async function validatePlugin(root, name, id, marketplaceEntry) {
   const errors = [];
   const dir = join(root, 'plugins', name);
   const at = (message) => errors.push(`plugins/${name}: ${message}`);
 
-  if (!NAME_PATTERN.test(name)) {
-    at('name must be 2 to 4 lowercase letters starting with "k"');
-  }
+  if (!NAME_PATTERN.test(name)) at('plugin name must be kebab-case and start with "k-"');
 
-  const requiredFiles = [
-    '.claude-plugin/plugin.json',
-    `commands/${name}.md`,
-    `bin/${name}.mjs`,
-    'README.md',
-    'CHANGELOG.md',
-  ];
+  const requiredFiles = ['.claude-plugin/plugin.json', 'README.md', 'CHANGELOG.md'];
+  if (id === null) {
+    at('commands/ must contain exactly one <id>.md file');
+  } else {
+    if (!ID_PATTERN.test(id))
+      at(`short id "${id}" must be 2 to 4 lowercase letters starting with "k"`);
+    requiredFiles.push(`bin/${id}.mjs`);
+  }
   for (const file of requiredFiles) {
     if (!(await exists(join(dir, file)))) at(`missing ${file}`);
   }
@@ -63,6 +74,7 @@ async function validatePlugin(root, name, marketplaceEntry) {
     if (manifest.name !== name) at(`plugin.json "name" must be "${name}"`);
     if (!SEMVER_PATTERN.test(manifest.version ?? '')) at('plugin.json "version" must be semver');
     if (!isNonEmptyString(manifest.description)) at('plugin.json "description" is required');
+    if (!isNonEmptyString(manifest.displayName)) at('plugin.json "displayName" is required');
     if (manifest.author?.name !== 'Kodffe Software') {
       at('plugin.json "author.name" must be "Kodffe Software"');
     }
@@ -115,9 +127,15 @@ export async function validateRepo(root) {
   }
 
   const plugins = await listPlugins(root);
+  const owners = new Map();
   for (const name of plugins) {
+    const id = await readShortId(root, name);
+    if (id !== null && owners.has(id)) {
+      errors.push(`plugins/${name}: short id "${id}" is already used by plugins/${owners.get(id)}`);
+    }
+    if (id !== null) owners.set(id, name);
     const entry = entries.find((candidate) => candidate.name === name);
-    errors.push(...(await validatePlugin(root, name, entry)));
+    errors.push(...(await validatePlugin(root, name, id, entry)));
   }
   for (const entry of entries) {
     if (!plugins.includes(entry.name)) {

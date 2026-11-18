@@ -4,6 +4,12 @@ Claude Code plugins by Kodffe Software.
 
 Each plugin lives in `plugins/<name>/` and follows the shared Kodffe plugin standards: opt-in per project, human approval for side effects, no secrets in the repo, Node >= 22 ESM with no runtime dependencies.
 
+## Plugins
+
+| Plugin                            | Command           | What it does                                                                        |
+| --------------------------------- | ----------------- | ----------------------------------------------------------------------------------- |
+| [k-delegate](plugins/k-delegate/) | `/k-delegate:kds` | Claude hands small, well-scoped tasks to DeepSeek in git worktrees and reviews them |
+
 ## Installation
 
 Add the marketplace once, then install any plugin from it:
