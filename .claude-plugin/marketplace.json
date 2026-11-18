@@ -1,0 +1,10 @@
+{
+  "name": "kodffe",
+  "owner": {
+    "name": "Kodffe Software"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by Kodffe Software"
+  },
+  "plugins": []
+}
